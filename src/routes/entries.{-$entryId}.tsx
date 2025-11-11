@@ -9,20 +9,21 @@ import { useResizableSidebar } from '@/hooks/use-resizable-sidebar'
 import { ThemeToggle } from '@/components/theme-toggle'
 import { EntryForm } from '@/components/editor/entry-form'
 import { EntriesSidebar } from '@/components/sidebar/EntriesSidebar'
-import { useQuery, useMutation } from '@tanstack/react-query'
-import { useConvexMutation, convexQuery } from '@convex-dev/react-query'
-import { api } from '../../../convex/_generated/api'
 import { getTodayMidnight } from '@/lib/entry-utils'
 import { useEffect, useState } from 'react'
-import type { Id } from '../../../convex/_generated/dataModel'
+import { useEntries, useEntry } from '@/hooks/use-entries'
 
-export const Route = createFileRoute('/_authed/entries/{-$entryId}')({
+export const Route = createFileRoute('/entries/{-$entryId}')({
   component: RouteComponent,
 })
 
 function RouteComponent() {
   const navigate = useNavigate({ from: Route.fullPath })
   const { entryId } = Route.useParams()
+  const context = Route.useRouteContext()
+
+  // Check if user is authenticated
+  const isAuthenticated = !!context.userId
 
   const {
     sidebarWidth,
@@ -37,47 +38,33 @@ function RouteComponent() {
   const [searchTerm, setSearchTerm] = useState('')
   const [isDirty, setIsDirty] = useState(false)
 
-  // Fetch entries list for sidebar (without full content for better performance)
+  // Use unified entry hooks
   const {
-    data: entries,
+    entries,
     isLoading: isLoadingEntries,
-    error: entriesError,
-  } = useQuery(convexQuery(api.entries.getEntries, {}))
+    createEntry,
+  } = useEntries(isAuthenticated)
 
-  // Fetch individual entry for the editor (with full content)
-  const {
-    data: currentEntry,
-    isLoading: isLoadingEntry,
-    error: entryError,
-  } = useQuery({
-    ...convexQuery(api.entries.getEntry, { id: entryId as Id<'entries'> }),
-    enabled: !!entryId, // Only fetch when we have an entryId
-  })
+  const { entry: currentEntry, isLoading: isLoadingEntry } = useEntry(
+    entryId,
+    isAuthenticated
+  )
 
   const isLoading = isLoadingEntries || isLoadingEntry
-  const error = entriesError || entryError
-
-  // Create entry mutation
-  const { mutate: createEntry } = useMutation({
-    mutationFn: useConvexMutation(api.entries.createEntry),
-  })
 
   // Create a temporary entry on mount if none exists
   useEffect(() => {
     if (!isLoadingEntries && entries && entries.length === 0) {
-      createEntry(
-        {},
-        {
-          onSuccess: (newEntryId) => {
+      const todayMidnight = getTodayMidnight()
+      createEntry(todayMidnight, { type: 'doc', content: [] }, '').then(
+        (newEntryId) => {
+          if (newEntryId) {
             navigate({
               to: '/entries/{-$entryId}',
-              params: { entryId: newEntryId },
+              params: { entryId: newEntryId as string },
             })
-          },
-          onError: (error) => {
-            console.error('Failed to create initial entry:', error)
-          },
-        },
+          }
+        }
       )
     }
   }, [isLoadingEntries, entries, createEntry, navigate])
@@ -85,28 +72,30 @@ function RouteComponent() {
   // Navigate to most recent entry when entries load and no entryId in URL
   useEffect(() => {
     if (!isLoadingEntries && entries && entries.length > 0 && !entryId) {
-      navigate({ to: '/entries/{-$entryId}', params: { entryId: entries[0]._id } })
+      navigate({
+        to: '/entries/{-$entryId}',
+        params: { entryId: entries[0]._id },
+      })
     }
   }, [isLoadingEntries, entries, entryId, navigate])
 
   // Handle creating a new entry
   const handleNewEntry = () => {
     const todayMidnight = getTodayMidnight()
-    createEntry(
-      { entryDate: todayMidnight },
-      {
-        onSuccess: (newEntryId) => {
-          navigate({ to: '/entries/{-$entryId}', params: { entryId: newEntryId } })
-        },
-        onError: (error) => {
-          console.error('Failed to create entry:', error)
-        },
-      },
+    createEntry(todayMidnight, { type: 'doc', content: [] }, '').then(
+      (newEntryId) => {
+        if (newEntryId) {
+          navigate({
+            to: '/entries/{-$entryId}',
+            params: { entryId: newEntryId as string },
+          })
+        }
+      }
     )
   }
 
   // Handle selecting an entry
-  const handleSelectEntry = (newEntryId: Id<'entries'>) => {
+  const handleSelectEntry = (newEntryId: string) => {
     navigate({ to: '/entries/{-$entryId}', params: { entryId: newEntryId } })
   }
 
@@ -126,7 +115,9 @@ function RouteComponent() {
   })
 
   return (
-    <div className={`flex h-screen w-full relative ${isResizing ? 'select-none' : ''}`}>
+    <div
+      className={`flex h-screen w-full relative ${isResizing ? 'select-none' : ''}`}
+    >
       {/* Left Button Group - Show single button when open, group when collapsed */}
       {isCollapsed ? (
         <div className="absolute top-[0.5rem] left-[0.5rem] z-10 flex gap-1 bg-background rounded-md p-1">
@@ -180,6 +171,7 @@ function RouteComponent() {
         sidebarRef={sidebarRef}
         isCollapsed={isCollapsed}
         sidebarWidth={sidebarWidth}
+        isAuthenticated={isAuthenticated}
       />
 
       {/* Resize Handle */}
@@ -234,23 +226,17 @@ function RouteComponent() {
                 <div className="text-muted-foreground">Loading entry...</div>
               </div>
             )}
-            {error && (
-              <div className="flex items-center justify-center p-8">
-                <div className="text-destructive">
-                  Failed to load entry: {error.message}
-                </div>
-              </div>
-            )}
-            {!isLoading && !error && currentEntry && (
+            {!isLoading && currentEntry && (
               <EntryForm
                 entryId={currentEntry._id}
                 initialTitle="Untitled"
                 initialContent={currentEntry.content}
                 entryDate={currentEntry.entryDate}
                 onDirtyChange={handleDirtyChange}
+                isAuthenticated={isAuthenticated}
               />
             )}
-            {!isLoading && !error && !currentEntry && (
+            {!isLoading && !currentEntry && (
               <div className="flex items-center justify-center p-8">
                 <div className="text-muted-foreground">
                   Creating your first entry...
