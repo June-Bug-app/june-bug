@@ -1,7 +1,7 @@
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
-import { Plus, Search, User, LogIn } from 'lucide-react'
+import { Plus, Search, User, LogIn, LogOut } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
 import { useNavigate } from '@tanstack/react-router'
 import {
@@ -14,6 +14,8 @@ import type { Id } from '../../../convex/_generated/dataModel'
 import { useQueryClient } from '@tanstack/react-query'
 import { convexQuery } from '@convex-dev/react-query'
 import { api } from '../../../convex/_generated/api'
+import { authClient } from '@/lib/auth-client'
+import { toast } from 'sonner'
 
 interface EntriesSidebarProps {
   entries: Entry[]
@@ -48,6 +50,19 @@ export function EntriesSidebar({
 
   // Group entries by date
   const groupedEntries = groupEntriesByDate(filteredEntries)
+
+  // Handle logout
+  const handleLogout = async () => {
+    try {
+      await authClient.signOut()
+      toast.success('Logged out successfully. You can continue using the app offline.')
+      // Reload the page to reset auth state and switch to local storage mode
+      window.location.href = '/entries'
+    } catch (error) {
+      console.error('Logout failed:', error)
+      toast.error('Failed to log out. Please try again.')
+    }
+  }
 
   // Prefetch entry data on hover for instant switching (only for authenticated users)
   const prefetchEntry = (entryId: string) => {
@@ -175,19 +190,30 @@ export function EntriesSidebar({
         <div className="absolute bottom-0 left-0 right-0 h-16 bg-gradient-to-t from-background via-background/80 to-transparent pointer-events-none" />
       </div>
 
-      {/* Fixed container at bottom - Login button or Avatar */}
-      <div className="h-16 flex items-center gap-3 mt-3 bg-background">
+      {/* Fixed container at bottom - Login button or Avatar with logout */}
+      <div className="mt-3 bg-background">
         {isAuthenticated ? (
-          // Show avatar for authenticated users
-          <>
-            <Avatar className="h-10 w-10">
-              <AvatarImage src="" alt="User avatar" />
-              <AvatarFallback className="bg-primary/10">
-                <User className="h-5 w-5 text-primary" />
-              </AvatarFallback>
-            </Avatar>
-            <span className="text-sm font-medium truncate">User</span>
-          </>
+          // Show avatar and logout button for authenticated users
+          <div className="flex flex-col gap-2">
+            <div className="flex items-center gap-3">
+              <Avatar className="h-10 w-10">
+                <AvatarImage src="" alt="User avatar" />
+                <AvatarFallback className="bg-primary/10">
+                  <User className="h-5 w-5 text-primary" />
+                </AvatarFallback>
+              </Avatar>
+              <span className="text-sm font-medium truncate">User</span>
+            </div>
+            <Button
+              variant="outline"
+              size="sm"
+              className="w-full"
+              onClick={handleLogout}
+            >
+              <LogOut className="h-4 w-4 mr-2" />
+              Sign Out
+            </Button>
+          </div>
         ) : (
           // Show login button for guests
           <Button
