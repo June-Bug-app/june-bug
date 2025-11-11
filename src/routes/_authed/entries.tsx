@@ -1,8 +1,9 @@
 import { createFileRoute } from '@tanstack/react-router'
 import { Button } from '@/components/ui/button'
-import { PanelLeft, Search, Plus } from 'lucide-react'
+import { PanelLeft, Search, Plus, User } from 'lucide-react'
 import { useResizableSidebar } from '@/hooks/use-resizable-sidebar'
 import { ThemeToggle } from '@/components/theme-toggle'
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 
 export const Route = createFileRoute('/_authed/entries')({
   component: RouteComponent,
@@ -64,12 +65,44 @@ function RouteComponent() {
       {/* Sidebar - Resizable width on left */}
       <aside
         ref={sidebarRef}
-        className="bg-background transition-[width,padding] duration-300 ease-in-out overflow-hidden"
+        className="bg-background transition-[width,padding] duration-300 ease-in-out overflow-hidden flex flex-col"
         style={{
           width: isCollapsed ? '0px' : `${sidebarWidth}px`,
           padding: isCollapsed ? '0' : '1rem',
         }}
-      ></aside>
+      >
+        {/* Scrollable content area */}
+        <div className="flex-1 overflow-y-auto">
+          {/* Demo content to show scrolling */}
+          <div className="space-y-2">
+            {Array.from({ length: 20 }).map((_, i) => (
+              <div
+                key={i}
+                className="p-3 rounded-md border bg-card hover:bg-accent/50 transition-colors"
+              >
+                <div className="text-sm font-medium">Item {i + 1}</div>
+                <div className="text-xs text-muted-foreground">
+                  Sample content
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Fixed avatar container at bottom */}
+        <div className="h-16 flex items-center gap-3 border-t pt-3 mt-3">
+          <Avatar className="h-10 w-10">
+            <AvatarImage src="" alt="User avatar" />
+            <AvatarFallback className="bg-primary/10">
+              <User className="h-5 w-5 text-primary" />
+            </AvatarFallback>
+          </Avatar>
+          <div className="flex flex-col overflow-hidden">
+            <span className="text-sm font-medium truncate">User Name</span>
+            <span className="text-xs text-muted-foreground truncate">user@example.com</span>
+          </div>
+        </div>
+      </aside>
 
       {/* Resize Handle */}
       {!isCollapsed && (
