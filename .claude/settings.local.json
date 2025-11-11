@@ -1,0 +1,12 @@
+{
+  "permissions": {
+    "allow": [
+      "mcp__convex__status",
+      "Bash(cat:*)"
+    ]
+  },
+  "enableAllProjectMcpServers": true,
+  "enabledMcpjsonServers": [
+    "shadcn"
+  ]
+}
