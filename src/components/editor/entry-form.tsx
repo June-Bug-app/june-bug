@@ -230,7 +230,11 @@ export function EntryForm({
 
       {/* Editor */}
       <TiptapEditor
-        initialContent={initialContent}
+        initialContent={
+          typeof initialContent === 'string'
+            ? initialContent
+            : JSON.stringify(initialContent)
+        }
         onUpdate={handleContentUpdate}
       />
     </div>
