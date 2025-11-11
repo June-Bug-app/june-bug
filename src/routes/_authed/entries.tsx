@@ -51,7 +51,7 @@ function RouteComponent() {
   const currentEntry = entries && entries.length > 0 ? entries[0] : null
 
   return (
-    <div className="flex min-h-screen w-full relative">
+    <div className="flex h-screen w-full relative">
       {/* Left Button Group - Show single button when open, group when collapsed */}
       {isCollapsed ? (
         <div className="absolute top-[0.5rem] left-[0.5rem] z-10 flex gap-1 bg-background rounded-md p-1">
@@ -114,10 +114,10 @@ function RouteComponent() {
 
       {/* Main Content Area with Background */}
       <main
-        className={`flex-1 ${isCollapsed ? 'bg-card' : 'bg-background pt-3'}`}
+        className={`flex-1 overflow-hidden ${isCollapsed ? 'bg-card' : 'bg-background pt-3'}`}
       >
         <div
-          className={`bg-card h-full relative ${isCollapsed ? '' : 'rounded-tl-lg shadow-sm border-l'}`}
+          className={`bg-card h-full relative overflow-y-auto ${isCollapsed ? '' : 'rounded-tl-lg shadow-sm border-l'}`}
         >
           {/* Top border that stops before the notch */}
           {!isCollapsed && (

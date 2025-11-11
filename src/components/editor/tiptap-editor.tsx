@@ -16,11 +16,7 @@ interface TiptapEditorProps {
   onUpdate: (content: string) => void
 }
 
-export function TiptapEditor({
-  initialContent,
-  onUpdate,
-}: TiptapEditorProps) {
-
+export function TiptapEditor({ initialContent, onUpdate }: TiptapEditorProps) {
   const editor = useEditor({
     extensions: [
       StarterKit.configure({
@@ -64,8 +60,7 @@ export function TiptapEditor({
     content: initialContent,
     editorProps: {
       attributes: {
-        class:
-          'prose prose-sm sm:prose lg:prose-lg xl:prose-2xl focus:outline-none max-w-none min-h-[500px] p-4',
+        class: 'prose prose-sm focus:outline-none w-full min-h-[500px] p-4',
       },
     },
     onUpdate: ({ editor }) => {

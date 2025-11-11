@@ -172,7 +172,7 @@ export function EntryForm({
   }, [content, entryId, updateEntry])
 
   return (
-    <div className="flex flex-col gap-4 px-12 py-4 max-w-5xl mx-auto">
+    <div className="flex flex-col gap-4 px-40 py-4 w-full">
       {/* Date Display */}
       <div className="text-2xl font-bold text-foreground mb-1">
         {formatEntryDate(entryDate)}
