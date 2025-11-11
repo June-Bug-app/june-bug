@@ -1,7 +1,9 @@
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
-import { Plus, Search, User } from 'lucide-react'
+import { Plus, Search, User, LogIn } from 'lucide-react'
+import { Badge } from '@/components/ui/badge'
+import { useNavigate } from '@tanstack/react-router'
 import {
   groupEntriesByDate,
   formatEntryDate,
@@ -15,14 +17,15 @@ import { api } from '../../../convex/_generated/api'
 
 interface EntriesSidebarProps {
   entries: Entry[]
-  selectedEntryId: Id<'entries'> | null
-  onSelectEntry: (entryId: Id<'entries'>) => void
+  selectedEntryId: string | null
+  onSelectEntry: (entryId: string) => void
   onNewEntry: () => void
   searchTerm: string
   onSearchChange: (term: string) => void
   sidebarRef: React.RefObject<HTMLElement>
   isCollapsed: boolean
   sidebarWidth: number
+  isAuthenticated: boolean
 }
 
 export function EntriesSidebar({
@@ -35,8 +38,10 @@ export function EntriesSidebar({
   sidebarRef,
   isCollapsed,
   sidebarWidth,
+  isAuthenticated,
 }: EntriesSidebarProps) {
   const queryClient = useQueryClient()
+  const navigate = useNavigate()
 
   // Filter entries by search term
   const filteredEntries = filterEntriesBySearch(entries, searchTerm)
@@ -44,12 +49,14 @@ export function EntriesSidebar({
   // Group entries by date
   const groupedEntries = groupEntriesByDate(filteredEntries)
 
-  // Prefetch entry data on hover for instant switching
-  const prefetchEntry = (entryId: Id<'entries'>) => {
-    queryClient.prefetchQuery({
-      ...convexQuery(api.entries.getEntry, { id: entryId }),
-      staleTime: 1000 * 60 * 5, // Keep prefetched data fresh for 5 minutes
-    })
+  // Prefetch entry data on hover for instant switching (only for authenticated users)
+  const prefetchEntry = (entryId: string) => {
+    if (isAuthenticated) {
+      queryClient.prefetchQuery({
+        ...convexQuery(api.entries.getEntry, { id: entryId as Id<'entries'> }),
+        staleTime: 1000 * 60 * 5, // Keep prefetched data fresh for 5 minutes
+      })
+    }
   }
 
   const renderEntryButton = (entry: Entry) => {
@@ -88,8 +95,17 @@ export function EntriesSidebar({
       <img
         src="/apple-touch-icon.png"
         alt="JuneBug Logo"
-        className="w-16 h-16 mb-4 mx-auto"
+        className="w-16 h-16 mb-2 mx-auto"
       />
+
+      {/* Demo Mode Badge - Only show for guests */}
+      {!isAuthenticated && (
+        <div className="flex justify-center mb-3">
+          <Badge variant="secondary" className="text-xs">
+            Demo Mode
+          </Badge>
+        </div>
+      )}
 
       {/* New Entry Button */}
       <Button className="w-full mb-3" size="default" onClick={onNewEntry}>
@@ -159,15 +175,30 @@ export function EntriesSidebar({
         <div className="absolute bottom-0 left-0 right-0 h-16 bg-gradient-to-t from-background via-background/80 to-transparent pointer-events-none" />
       </div>
 
-      {/* Fixed avatar container at bottom */}
+      {/* Fixed container at bottom - Login button or Avatar */}
       <div className="h-16 flex items-center gap-3 mt-3 bg-background">
-        <Avatar className="h-10 w-10">
-          <AvatarImage src="" alt="User avatar" />
-          <AvatarFallback className="bg-primary/10">
-            <User className="h-5 w-5 text-primary" />
-          </AvatarFallback>
-        </Avatar>
-        <span className="text-sm font-medium truncate">User</span>
+        {isAuthenticated ? (
+          // Show avatar for authenticated users
+          <>
+            <Avatar className="h-10 w-10">
+              <AvatarImage src="" alt="User avatar" />
+              <AvatarFallback className="bg-primary/10">
+                <User className="h-5 w-5 text-primary" />
+              </AvatarFallback>
+            </Avatar>
+            <span className="text-sm font-medium truncate">User</span>
+          </>
+        ) : (
+          // Show login button for guests
+          <Button
+            variant="default"
+            className="w-full"
+            onClick={() => navigate({ to: '/sign-in' })}
+          >
+            <LogIn className="h-4 w-4 mr-2" />
+            Sign In
+          </Button>
+        )}
       </div>
     </aside>
   )
