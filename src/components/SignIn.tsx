@@ -44,7 +44,7 @@ export const SignIn = () => {
           if (ctx.data.twoFactorRedirect) {
             //await navigate({ to: '/verify-2fa' })
           } else {
-            await navigate({ to: '/client-only' })
+            await navigate({ to: '/entries' })
           }
         },
         onError: (ctx) => {
@@ -102,7 +102,7 @@ export const SignIn = () => {
   //       },
   //       onSuccess: async () => {
   //         setAnonymousLoading(false)
-  //         await navigate({ to: '/client-only' })
+  //         await navigate({ to: '/entries' })
   //       },
   //       onError: (ctx) => {
   //         setAnonymousLoading(false)
@@ -182,7 +182,7 @@ export const SignIn = () => {
   //         },
   //         onSuccess: async () => {
   //           setOtpLoading(false)
-  //           await navigate({ to: '/client-only' })
+  //           await navigate({ to: '/entries' })
   //         },
   //         onError: (ctx) => {
   //           setOtpLoading(false)

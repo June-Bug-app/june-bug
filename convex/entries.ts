@@ -84,8 +84,44 @@ export const getEntriesInRange = query({
 })
 
 /**
- * Create a new entry
- * Initializes with empty TipTap JSON
+ * Search entries by plain text content
+ * Returns entries that contain the search term (case-insensitive)
+ */
+export const searchEntries = query({
+  args: {
+    searchTerm: v.string(),
+  },
+  handler: async (ctx, args) => {
+    const user = await safeGetUser(ctx)
+    if (!user) {
+      return []
+    }
+
+    // Get all active entries
+    const entries = await ctx.db
+      .query('entries')
+      .withIndex('userId_isActive_entryDate', (q) =>
+        q.eq('userId', user._id).eq('isActive', true),
+      )
+      .order('desc')
+      .collect()
+
+    // Filter by search term (case-insensitive)
+    const lowerSearchTerm = args.searchTerm.toLowerCase().trim()
+    if (!lowerSearchTerm) {
+      return entries
+    }
+
+    return entries.filter((entry) =>
+      entry.plainText?.toLowerCase().includes(lowerSearchTerm),
+    )
+  },
+})
+
+/**
+ * Create a new entry or return existing one for the date
+ * If an entry already exists for the specified date, returns that entry's ID
+ * Otherwise creates a new entry with empty TipTap JSON
  */
 export const createEntry = mutation({
   args: {
@@ -99,9 +135,24 @@ export const createEntry = mutation({
     // Default to today at midnight in user's timezone
     const entryDate = args.entryDate ?? getMidnightTimestamp(now)
 
+    // Check if an entry already exists for this date
+    const existingEntry = await ctx.db
+      .query('entries')
+      .withIndex('userId_entryDate', (q) =>
+        q.eq('userId', user._id).eq('entryDate', entryDate),
+      )
+      .filter((q) => q.eq(q.field('isActive'), true))
+      .first()
+
+    // If entry exists, return its ID
+    if (existingEntry) {
+      return existingEntry._id
+    }
+
     // Default to empty TipTap JSON
     const content = args.content ?? JSON.stringify({ type: 'doc', content: [] })
 
+    // Create new entry
     const entryId = await ctx.db.insert('entries', {
       userId: user._id,
       entryDate,
