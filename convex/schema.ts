@@ -21,6 +21,7 @@ export default defineSchema({
     entryDate: v.number(), // Midnight timestamp (can be backdated)
     content: v.string(), // TipTap JSON stringified
     plainText: v.optional(v.string()), // Plain text for search/AI processing
+    aiTitle: v.optional(v.string()), // AI-generated title (falls back to date)
     isActive: v.boolean(), // Soft delete flag
     createdAt: v.number(), // When entry was created
     updatedAt: v.number(), // Last edited timestamp
