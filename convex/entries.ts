@@ -17,19 +17,23 @@ export const getEntries = query({
       return []
     }
 
-    const isActive = args.includeInactive ? undefined : true
-
-    return await ctx.db
-      .query('entries')
-      .withIndex('userId_isActive_entryDate', (q) => {
-        let query = q.eq('userId', user._id)
-        if (isActive !== undefined) {
-          query = query.eq('isActive', isActive)
-        }
-        return query
-      })
-      .order('desc')
-      .collect()
+    if (args.includeInactive) {
+      // Get all entries (active and inactive)
+      return await ctx.db
+        .query('entries')
+        .withIndex('userId_entryDate', (q) => q.eq('userId', user._id))
+        .order('desc')
+        .collect()
+    } else {
+      // Get only active entries (default)
+      return await ctx.db
+        .query('entries')
+        .withIndex('userId_isActive_entryDate', (q) =>
+          q.eq('userId', user._id).eq('isActive', true),
+        )
+        .order('desc')
+        .collect()
+    }
   },
 })
 
