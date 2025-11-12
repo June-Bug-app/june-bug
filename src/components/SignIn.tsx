@@ -1,4 +1,4 @@
-import { Link, useNavigate } from '@tanstack/react-router'
+import { Link } from '@tanstack/react-router'
 import { Button } from '@/components/ui/button'
 import {
   Card,
@@ -16,7 +16,6 @@ import { authClient } from '@/lib/auth-client'
 import { Container } from '@/components/Container'
 
 export const SignIn = () => {
-  const navigate = useNavigate()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [otp, setOtp] = useState('')
@@ -44,7 +43,9 @@ export const SignIn = () => {
           if (ctx.data.twoFactorRedirect) {
             //await navigate({ to: '/verify-2fa' })
           } else {
-            await navigate({ to: '/entries' })
+            // Navigate to entries - migration will happen there after auth context loads
+            // Use window.location to avoid TypeScript route type issues
+            window.location.href = '/entries'
           }
         },
         onError: (ctx) => {
@@ -277,8 +278,19 @@ export const SignIn = () => {
 
             <div className="flex flex-col gap-2">
               {signInMethod === 'password' && (
-                <Button type="submit" className="w-full" disabled={otpLoading}>
-                  Sign in with Password
+                <Button
+                  type="submit"
+                  className="w-full"
+                  disabled={otpLoading}
+                >
+                  {otpLoading ? (
+                    <>
+                      <Loader2 size={16} className="animate-spin mr-2" />
+                      Signing in...
+                    </>
+                  ) : (
+                    'Sign in with Password'
+                  )}
                 </Button>
               )}
               {/* {signInMethod === 'passwordless' && !otpSent && (
