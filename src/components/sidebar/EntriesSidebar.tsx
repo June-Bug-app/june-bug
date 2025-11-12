@@ -54,6 +54,21 @@ export function EntriesSidebar({
   // Group entries by date
   const groupedEntries = groupEntriesByDate(filteredEntries)
 
+  // Handle logout
+  const handleLogout = async () => {
+    try {
+      await authClient.signOut()
+      toast.success(
+        'Logged out successfully. You can continue using the app offline.',
+      )
+      // Reload the page to reset auth state and switch to local storage mode
+      window.location.href = '/entries'
+    } catch (error) {
+      console.error('Logout failed:', error)
+      toast.error('Failed to log out. Please try again.')
+    }
+  }
+
   // Prefetch entry data on hover for instant switching (only for authenticated users)
   const prefetchEntry = (entryId: string) => {
     if (isAuthenticated) {
@@ -96,12 +111,12 @@ export function EntriesSidebar({
       {/* App Title */}
       <h1 className="text-2xl font-bold mb-2 text-center">JuneBug</h1>
 
-      {/* Logo */}
+      {/* Logo
       <img
         src="/apple-touch-icon.png"
         alt="JuneBug Logo"
         className="w-16 h-16 mb-2 mx-auto"
-      />
+      /> */}
 
       {/* Demo Mode Badge - Only show for guests */}
       {!isAuthenticated && (
