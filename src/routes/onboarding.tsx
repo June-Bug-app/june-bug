@@ -8,13 +8,10 @@ import { useEffect } from 'react'
 
 export const Route = createFileRoute('/onboarding')({
   beforeLoad: async ({ context }) => {
-    // Redirect to sign-in if not authenticated
+    // Redirect to entries if not authenticated (onboarding is only for authenticated users)
     if (!context.userId) {
       throw redirect({
-        to: '/sign-in',
-        search: {
-          redirect: '/onboarding',
-        },
+        to: '/entries',
       })
     }
   },
