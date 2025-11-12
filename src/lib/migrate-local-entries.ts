@@ -45,11 +45,19 @@ export async function migrateLocalEntriesToDatabase(
   // Migrate each entry
   for (const entry of sortedEntries) {
     try {
-      await convexClient.mutation(api.entries.createEntry, {
+      // Create the entry with content
+      const entryId = await convexClient.mutation(api.entries.createEntry, {
         entryDate: new Date(entry.entryDate).getTime(),
-        content: entry.content,
-        plainText: entry.plainText,
+        content: JSON.stringify(entry.content),
       });
+
+      // Update with plainText if available
+      if (entry.plainText && entryId) {
+        await convexClient.mutation(api.entries.updateEntry, {
+          id: entryId,
+          plainText: entry.plainText,
+        });
+      }
 
       result.migratedCount++;
       console.log(`Migrated entry ${entry.id}`);

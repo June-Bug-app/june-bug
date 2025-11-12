@@ -45,7 +45,8 @@ export const SignIn = () => {
             //await navigate({ to: '/verify-2fa' })
           } else {
             // Navigate to entries - migration will happen there after auth context loads
-            await navigate({ to: '/entries' })
+            // Use window.location to avoid TypeScript route type issues
+            window.location.href = '/entries'
           }
         },
         onError: (ctx) => {
