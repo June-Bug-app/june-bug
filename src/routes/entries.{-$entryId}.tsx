@@ -340,6 +340,7 @@ function RouteComponent() {
                 entryDate={currentEntry.entryDate}
                 onDirtyChange={handleDirtyChange}
                 isAuthenticated={isAuthenticated}
+                rightSidebarCollapsed={rightSidebarCollapsed}
               />
             )}
             {!isLoading && !currentEntry && (
