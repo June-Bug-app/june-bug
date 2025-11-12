@@ -21,6 +21,7 @@ interface EntryFormProps {
   entryDate: number // Timestamp of the entry
   onDirtyChange?: (isDirty: boolean) => void // Callback when dirty state changes
   isAuthenticated: boolean
+  rightSidebarCollapsed: boolean
 }
 
 // Format date as "Day, Month DDth, YYYY" (e.g., "Fri, May 5th, 2023")
@@ -72,6 +73,7 @@ export function EntryForm({
   entryDate,
   onDirtyChange,
   isAuthenticated,
+  rightSidebarCollapsed,
 }: EntryFormProps) {
   const [isSaving, setIsSaving] = useState(false)
   const [lastSaved, setLastSaved] = useState<Date | null>(null)
@@ -188,8 +190,13 @@ export function EntryForm({
     }
   }, [entryId, debouncedSave])
 
+  const horizontalPadding = rightSidebarCollapsed ? '14rem' : '4rem' // 224px : 64px
+
   return (
-    <div className="flex flex-col gap-2 px-40 py-4 w-full relative">
+    <div
+      className="flex flex-col gap-2 py-4 w-full relative transition-[padding] duration-300 ease-in-out"
+      style={{ paddingLeft: horizontalPadding, paddingRight: horizontalPadding }}
+    >
       {/* Date Display */}
       <div className="text-2xl font-bold text-foreground mb-1">
         {formatEntryDate(entryDate)}
