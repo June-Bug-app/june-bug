@@ -27,9 +27,12 @@
       "mcp__convex__data",
       "Bash(npx convex dev:*)",
       "Bash(npx convex run:*)",
-      "Bash(npm run generate-mock-entries:*)"
+      "Bash(npm run generate-mock-entries:*)",
+      "Bash(git push:*)"
     ]
   },
   "enableAllProjectMcpServers": true,
-  "enabledMcpjsonServers": ["shadcn"]
+  "enabledMcpjsonServers": [
+    "shadcn"
+  ]
 }
