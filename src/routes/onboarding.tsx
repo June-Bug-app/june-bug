@@ -1,5 +1,5 @@
 import { createFileRoute, redirect, useNavigate } from '@tanstack/react-router'
-import OnboardingFlow from '@/components/OnboardingFlow'
+import ChatOnboarding from '@/components/chat-onboarding/ChatOnboarding'
 import { useQuery } from '@tanstack/react-query'
 import { convexQuery } from '@convex-dev/react-query'
 import { api } from '@/../convex/_generated/api'
@@ -45,9 +45,5 @@ function RouteComponent() {
     )
   }
 
-  return (
-    <div className="min-h-screen bg-background">
-      <OnboardingFlow userId={currentUser._id as Id<'users'>} />
-    </div>
-  )
+  return <ChatOnboarding userId={currentUser._id as Id<'users'>} />
 }
