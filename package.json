@@ -9,6 +9,7 @@
     "dev:web": "vite dev --port 3000",
     "dev:db": "npx convex dev",
     "build": "npx convex deploy && vite build",
+    "build:preview": "vite build",
     "generate": "convex dev --once",
     "start": "node .output/server/index.mjs",
     "lint": "prettier --check '**/*' --ignore-unknown && eslint --ext .ts,.tsx ./app",
