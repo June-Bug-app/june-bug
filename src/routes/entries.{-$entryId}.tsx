@@ -181,8 +181,6 @@ function RouteComponent() {
       setSelectedCategory(null)
     }
     toggleRightSidebar()
-    // Clicking the logo stops the animation
-    setShowJuneBugAnimation(false)
   }
 
   // Handle animation completion
