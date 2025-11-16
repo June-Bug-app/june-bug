@@ -172,6 +172,25 @@ export const createEntry = mutation({
       updatedAt: now,
     })
 
+    // Check entry count for AI prompt generation trigger
+    const entryCount = await ctx.db
+      .query('entries')
+      .withIndex('userId', (q) => q.eq('userId', user._id))
+      .filter((q) => q.eq(q.field('isActive'), true))
+      .collect()
+      .then((entries) => entries.length)
+
+    // At 5 entries, generate history-based prompts for all types
+    if (entryCount === 5) {
+      const promptTypes = ['reflection', 'skill-development', 'career-growth', 'daily-checkin']
+      for (const promptType of promptTypes) {
+        await ctx.scheduler.runAfter(0, internal.ai.prompts.generateHistoryPrompt, {
+          userId: user._id,
+          promptType,
+        })
+      }
+    }
+
     return entryId
   },
 })
