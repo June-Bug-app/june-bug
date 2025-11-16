@@ -17,18 +17,24 @@ export function FloatingJuneBug({
   const [isAnimating, setIsAnimating] = useState(false)
   const [shouldWiggle, setShouldWiggle] = useState(false)
 
+  // Check if user has already seen the prompt
   useEffect(() => {
     if (shouldAnimate) {
-      setIsAnimating(true)
-      // Animation lasts 3 seconds before completing
-      const timer = setTimeout(() => {
-        setIsAnimating(false)
-        onAnimationComplete()
-      }, 3000)
-
-      return () => clearTimeout(timer)
+      const hasSeenPrompt = localStorage.getItem('juneBugPromptSeen')
+      if (!hasSeenPrompt) {
+        setIsAnimating(true)
+      }
     }
-  }, [shouldAnimate, onAnimationComplete])
+  }, [shouldAnimate])
+
+  // Dismiss animation when sidebar opens and save to localStorage
+  useEffect(() => {
+    if (isSidebarOpen && isAnimating) {
+      setIsAnimating(false)
+      localStorage.setItem('juneBugPromptSeen', 'true')
+      onAnimationComplete()
+    }
+  }, [isSidebarOpen, isAnimating, onAnimationComplete])
 
   // Happy wiggle when sidebar opens
   useEffect(() => {
@@ -74,7 +80,7 @@ export function FloatingJuneBug({
         )}
       </div>
       {isAnimating && (
-        <div className="absolute -top-12 left-1/2 -translate-x-1/2 whitespace-nowrap">
+        <div className="absolute bottom-0 right-full mr-3 whitespace-nowrap">
           <div className="bg-primary text-primary-foreground px-3 py-1.5 rounded-md text-sm font-medium shadow-lg animate-in fade-in zoom-in-95 duration-300">
             Click me for prompts! 🎯
           </div>
