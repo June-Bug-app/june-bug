@@ -6,7 +6,8 @@
  */
 
 import { useEffect, useRef } from 'react';
-import { useConvexAction } from '@convex-dev/react-query';
+import { useMutation } from '@tanstack/react-query';
+import { useConvexMutation } from '@convex-dev/react-query';
 import { api } from '../../convex/_generated/api';
 import { useDebounce } from './use-debounce';
 import type { Id } from '../../convex/_generated/dataModel';
@@ -31,9 +32,9 @@ export function useContextPrompts({
   const debouncedContent = useDebounce(currentContent, debounceMs);
   const lastGeneratedRef = useRef<string>('');
 
-  const { mutate: generateContextPrompt, isPending } = useConvexAction(
-    api.ai.prompts.generateContextPrompt
-  );
+  const { mutate: generateContextPrompt, isPending } = useMutation({
+    mutationFn: useConvexMutation(api.ai.prompts.generateContextPrompt),
+  });
 
   useEffect(() => {
     // Only generate if:

@@ -7,7 +7,7 @@
  * 3. Context-aware prompts - Generated in real-time based on current entry
  */
 
-import { internalAction } from '../_generated/server';
+import { action, internalAction } from '../_generated/server';
 import { v } from 'convex/values';
 import { internal } from '../_generated/api';
 import { getTemplatePrompts } from './promptTemplates';
@@ -244,8 +244,9 @@ export const generateHistoryPrompt = internalAction({
 
 /**
  * Generate context-aware prompt based on current entry content
+ * Regular action (not internal) so it can be called from the frontend
  */
-export const generateContextPrompt = internalAction({
+export const generateContextPrompt = action({
   args: {
     userId: v.id('users'),
     promptType: v.string(),
